@@ -140,9 +140,12 @@ def delete_unziped_files(download_path,file_name):
 
 
 if __name__ == "__main__":
+    # 待处理的文件时间
     start_date = datetime.date(2021,12,1)
     end_date = datetime.date(2022,4,1)
+    # 百度云的待处理文件存储位置
     could_base_path = "/data/China_weibo_data/mongo_data_backup/"
+    # 文件的下载位置以及文件处理后数据的存储位置
     download_path = "/Users/kang/Downloads/weibo_process/"
 
     # download_path = "/Users/kang/baiduyun_sync/work/weibo_data_analysis/"
