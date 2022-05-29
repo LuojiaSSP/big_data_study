@@ -8,6 +8,29 @@
 3. 上传到本地的mongo数据库
 4. 并执行数据抽取、转换、结果存储为两种列存储的表格数据格式
 
+`data_archiving.py`将在已存在数据库中的数据抽取、转换、存储为两种列存储的表格数据格式
+
+目前提取的数据属性包括：
+
+```bash
+created_at              datetime64[ns, pytz.FixedOffset(480)]
+id                                                      int64
+text                                                   object
+pic_ids                                                object
+bmiddle_pic                                            object
+lat                                                   float64
+lon                                                   float64
+user_id                                                 int64
+user_location                                          object
+user_gender                                            object
+user_followers_count                                    int64
+user_friends_count                                      int64
+user_statuses_count                                     int64
+use_lang                                               object
+```
+
+
+
 ### 环境配置
 
 1. mongo 安装、服务开启
