@@ -64,6 +64,7 @@ def get_collection_as_dataframe(collection,collection_name):
         temp["user_followers_count"] = item["user"]["followers_count"]
         temp["user_friends_count"] = item["user"]["friends_count"]
         temp["user_statuses_count"] = item["user"]["statuses_count"]
+        temp["user_lang"] = item["user"]["lang"]
         data_list += [temp]
         # break
         
