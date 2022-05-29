@@ -31,7 +31,17 @@ mongod --dir you_storage_path
 conda install vaex tqdm pandas pymongo tables
 ```
 
-3. 运行文件
+3. 百度云命令行客户端下载与配置
+   
+参考[GitHub - qjfoidnh/BaiduPCS-Go: iikira/BaiduPCS-Go原版基础上集成了分享链接/秒传链接转存功能](https://github.com/qjfoidnh/BaiduPCS-Go)
+
+下载文件解压缩后，将其移动到`/usr/local/bin`以便程序能够从容易目录访问
+
+执行登陆
+
+
+
+4. 运行文件
 
 修改下面的文件
 
