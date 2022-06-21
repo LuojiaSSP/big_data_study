@@ -9,26 +9,26 @@ import pandas as pd
 import tqdm
 from datetime import datetime
 
-#from multiprocesspandas import applyparallel
-
+# from multiprocesspandas import applyparallel
+# 该模块并不是一个很好的多线程的实现
 # import vaex
 
 
-def clean(text):
-    text = re.sub(r"(回复)?(//)?\s*@\S*?\s*(:| |$)","", text)  # 去除正文中的@和回复/转发中的用户名
-    text = re.sub(r"#\S+#","", text)      # 保留话题内容
-    URL_REGEX = re.compile(
-        r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))',
-        re.IGNORECASE)
-    text = re.sub(URL_REGEX, "", text)       # 去除网址
-    text = text.replace('http', '')
-    text=text.replace('分享图片', '')
-    text = text.replace('分享视频', '')
-    text = text.replace("转发微博","")       # 去除无意义的词语
-    text = re.sub(r"\s+", "", text) # 合并正文中过多的空格
-    text = text.replace('\u200b', '')#去除不可见字符\u200d \U0001fac0 \U0001f964 http  \U0001fa74 \U0001f99a
-    return text.strip()#保证字符串尾部没有多余空格
-#去除链接
+# def clean(text):
+#     text = re.sub(r"(回复)?(//)?\s*@\S*?\s*(:| |$)","", text)  # 去除正文中的@和回复/转发中的用户名
+#     text = re.sub(r"#\S+#","", text)      # 保留话题内容
+#     URL_REGEX = re.compile(
+#         r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))',
+#         re.IGNORECASE)
+#     text = re.sub(URL_REGEX, "", text)       # 去除网址
+#     text = text.replace('http', '')
+#     text=text.replace('分享图片', '')
+#     text = text.replace('分享视频', '')
+#     text = text.replace("转发微博","")       # 去除无意义的词语
+#     text = re.sub(r"\s+", "", text) # 合并正文中过多的空格
+#     text = text.replace('\u200b', '')#去除不可见字符\u200d \U0001fac0 \U0001f964 http  \U0001fa74 \U0001f99a
+#     return text.strip()#保证字符串尾部没有多余空格
+# #去除链接
 
 def clean_s(x):
     x = x.str.replace(r"(回复)?(//)?\s*@\S*?\s*(:| |$)","", regex=True)  # 去除正文中的@和回复/转发中的用户名
@@ -49,6 +49,7 @@ def clean_s(x):
 def deletehttp(sentence):
     sentence = sentence.split(r"http://t.cn/")[0]
     return sentence
+
 def deletehttp_s(sentence):
     sentence = sentence.str.split(r'http://t.cn/',expand=True)[0]
     return sentence
@@ -103,21 +104,21 @@ def remove_url_s(src):
 #             info = info.replace(i, " ")
 #     return info
 
-def clean_a_test(row):
+# def clean_a_test(row):
 
-    text = row['text']
-    ht = HarvestText()
-    CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
-   # logger.info(f'old:{len(data)}\n')
-    #print("old:",len(data))
-    content = CharTable.convert(text)
-    cleaned_content = remove_url(ht.clean_text(content, emoji=False))  # 过滤@后最多6个字符
-    cleaned_content=clean(cleaned_content)
-    cleaned_content=remove_invisible_chars(cleaned_content)
-    cleaned_content = deletehttp(cleaned_content)
-    # cleaned_content = deletewords(cleaned_content)
+#     text = row['text']
+#     ht = HarvestText()
+#     CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
+#    # logger.info(f'old:{len(data)}\n')
+#     #print("old:",len(data))
+#     content = CharTable.convert(text)
+#     cleaned_content = remove_url(ht.clean_text(content, emoji=False))  # 过滤@后最多6个字符
+#     cleaned_content=clean(cleaned_content)
+#     cleaned_content=remove_invisible_chars(cleaned_content)
+#     cleaned_content = deletehttp(cleaned_content)
+#     # cleaned_content = deletewords(cleaned_content)
 
-    return cleaned_content
+#     return cleaned_content
 
 if __name__ == "__main__":
     # print("test")
@@ -126,10 +127,13 @@ if __name__ == "__main__":
     
     input_path = "weibo_output/parquet"
     output_path = "weibo_output/weibo_text_clean_parquet"
+    
     need_process = [item for item in os.listdir(input_path) if item not in list(os.listdir(output_path))]
     print(len(os.listdir(output_path)),len(os.listdir(input_path)))
+    
     ht = HarvestText()
     CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
+         
          
     for file_name in tqdm.tqdm(os.listdir(input_path),desc="data need precess"):
 
@@ -144,7 +148,10 @@ if __name__ == "__main__":
         #sample['text_clean'] = sample.text.apply_parallel(clean_a_test_p, num_processes=6)
 # 369 ms ± 70.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
         t1 = datetime.now()
-        x = sample["text"].map(CharTable.convert).map(lambda x:ht.clean_text(x,emoji=False)).map(remove_url)
+        x = sample["text"].map(CharTable.convert).map(lambda x:ht.clean_text(x,emoji=False))
+        # TODO: 这里可以实现多线程进一步加快处理速度
+        x = x.map(remove_url)
+        # x = x.apply_parallel(remove_url,num_processes=6)
         # x = remove_url_s(x) 
         x = clean_s(x).map(
             remove_invisible_chars).map(deletehttp)
