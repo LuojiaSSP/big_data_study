@@ -1,3 +1,16 @@
+# 说明
+
+- `auto_process_archiving.py` 自动从百度云下载并归档微博数据，生成parquet文件
+- `data_clean.py` 对微博数据中的文本进行清理以方便进行进一步的语言处理，为模型做准备
+- `drop_duplicates.py` 对微博所有的数据根据`id`进行去重并生成按照天组织的parquet文件
+- 
+
+
+
+
+
+
+
 
 ## 自动从百度云下载数据并归档数据
 
