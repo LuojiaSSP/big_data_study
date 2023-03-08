@@ -2,16 +2,19 @@
 
 weibo 目录下的脚本
 
-- `auto_process_archiving.py` 自动从百度云下载并归档微博数据，生成parquet文件 (Xiaokang)
-- `data_clean.py` 对微博数据中的文本进行清理以方便进行进一步的语言处理，为模型做准备 (Xiaokang and Dongyang)
-- `drop_duplicates.py` 对微博所有的数据根据`id`进行去重并生成按照天组织的parquet文件 (Xiaokang)
+- `auto_process_archiving.py` 自动从百度云下载并归档微博数据，生成parquet文件 (Xiaokang) 在上传数据之前进行处理并备份！
+- `data_clean.py` 对微博数据中的文本进行清理以方便进行进一步的语言处理，为模型做准备 (Xiaokang and Dongyang)，这个主要有利于对文本进行训练等
+- `drop_duplicates.py` 对微博所有的数据根据`id`进行去重并生成按照天组织的parquet文件 (Xiaokang)可以减少每次读到内存的数据大小。
 
+以上可以产生数据的三个版本
 
+## Todo
 
+- [ ] 对所有的数据进行地理编码的代码
+- [ ] 对所有数据进行情感计算的结果
+- [ ] 对所有数据进行主题计算的结果
 
-
-
-
+以上这些既是代码又是数据处理的结果
 
 
 ## auto_process_archiving
@@ -25,7 +28,6 @@ weibo 目录下的脚本
 3. 上传到本地的mongo数据库
 4. 并执行数据抽取、转换、结果存储为两种列存储的表格数据格式
 
-`data_archiving.py`将在已存在数据库中的数据抽取、转换、存储为两种列存储的表格数据格式
 
 目前提取的数据属性包括：
 
