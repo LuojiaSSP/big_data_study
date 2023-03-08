@@ -2,7 +2,6 @@ import os
 from pymongo import MongoClient
 from tqdm import tqdm,trange
 import pandas as pd
-import vaex
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -77,9 +76,9 @@ def save_coulumnar_files(root_output_path):
 
     root_path = root_output_path
     output_path1 = os.path.join(root_path,"weibo_output", "parquet")
-    output_path2 = os.path.join(root_path,"weibo_output", "vaex_hdf5")
+    # output_path2 = os.path.join(root_path,"weibo_output", "vaex_hdf5")
     os.makedirs(output_path1,exist_ok = True)
-    os.makedirs(output_path2,exist_ok = True)
+    # os.makedirs(output_path2,exist_ok = True)
 
 
 
@@ -108,8 +107,8 @@ def save_coulumnar_files(root_output_path):
 
             data.to_parquet("%s/%s.parquet"%(output_path1,collection_name),engine='pyarrow' )
             
-            vaex_df = vaex.from_pandas(data, copy_index=False)  
-            vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
+            # vaex_df = vaex.from_pandas(data, copy_index=False)  
+            # vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
 
             # df = pd.read_parquet(file_path,engine="pyarrow")
             #存储为csv格式
@@ -126,10 +125,11 @@ def save_coulumnar_files(root_output_path):
     print("save to local coulumnar_files done")
 
 def delete_database(db_name):
-    cmd = """mongo 127.0.0.1:27017/%s --eval "db.dropDatabase();" """%db_name
-    # mongo_client = MongoClient("mongodb://localhost:27017")
-    # mongo_client.drop_database(db_name)
-    os.system(cmd)
+    mongo_client = MongoClient("mongodb://localhost:27017")
+    mongo_client.drop_database(db_name)
+
+    # cmd = """mongo 127.0.0.1:27017/%s --eval "db.dropDatabase();" """%db_name
+    # os.system(cmd)
     print("delete mongo database done")
 
 def delete_unziped_files(download_path,file_name):
@@ -142,14 +142,17 @@ def delete_unziped_files(download_path,file_name):
 
 if __name__ == "__main__":
     # 待处理的文件时间
-    start_date = datetime.date(2021,12,1)
-    end_date = datetime.date(2022,4,1)
+    start_date = datetime.date(2022,12,1)
+    end_date = datetime.date(2023,1,1)
     # 百度云的待处理文件存储位置
     could_base_path = "/data/China_weibo_data/mongo_data_backup/"
     # 文件的下载位置以及文件处理后数据的存储位置
-    download_path = "/Users/kang/Downloads/weibo_process/"
+    download_path = "../data/weibo_process/"
+    # mkdirs
+    os.makedirs(download_path,exist_ok=True)
 
     # download_path = "/Users/kang/baiduyun_sync/work/weibo_data_analysis/"
+    i = 0
     while start_date <= end_date:
         file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
         print(file_name,"*"*60)
@@ -157,6 +160,7 @@ if __name__ == "__main__":
 
         could_file_path = "%s%s"%(could_base_path,file_name)
         # print(could_file_path)
+        # if i!=0:
         download_data(could_file_path,download_path)
         un_zip_data(file_name,download_path)
         # file_name = "202105.7z"
@@ -167,5 +171,6 @@ if __name__ == "__main__":
         for db_name in dblist:
             delete_database(db_name=db_name)
         delete_unziped_files(download_path,file_name)
+        i+=1
         # break
         
