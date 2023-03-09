@@ -93,7 +93,7 @@ def save_coulumnar_files(root_output_path):
         db = mongo_client[db_name]
         #数据库中的集合名字
         collist = [item for item in db.list_collection_names() if (item != "China_tmp") ]
-
+        
         # break
         for collection_name in collist:
 

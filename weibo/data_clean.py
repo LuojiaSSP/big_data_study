@@ -135,12 +135,14 @@ if __name__ == "__main__":
     ht = HarvestText()
     CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
          
-         
-    for file_name in tqdm.tqdm(os.listdir(input_path),desc="data need precess"):
+    need_process = ["China_2209_22-30.parquet","China_2210_15-21.parquet"]
+    for file_name in tqdm.tqdm(need_process,desc="data need precess"):
 
-        #file_name = "China_2105_01-07.parquet"
-        data  = pd.read_parquet('%s/%s'%(input_path,file_name))
-        # sample = data.sample(100)
+        try:
+            data  = pd.read_parquet('%s/%s'%(input_path,file_name))
+        except Exception as e:
+            print(file_name, e)
+            continue
         t1 = datetime.now()
         x = data["text"].map(CharTable.convert).map(lambda x:ht.clean_text(x,emoji=False))
         x = x.map(remove_url)

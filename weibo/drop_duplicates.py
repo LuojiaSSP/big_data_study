@@ -2,13 +2,14 @@
 # 这里也把数据集拆分成按照天数的数据集
 # drop duplicates
 import pandas as pd
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from datetime import date
 import os
 
 # 修改这里的路径
-output_dir = "../../../weibo_text_clean_parquet_daily/"
-input_dir = "../../../weibo_text_clean_parquet/"
+output_dir = "../data/weibo_process/weibo_output/weibo_text_clean_parquet_daily/"
+os.makedirs(output_dir,exist_ok=True)
+input_dir = "../data/weibo_process/weibo_output/weibo_text_clean_parquet/"
 
 for item in tqdm(os.listdir(input_dir)):
     
