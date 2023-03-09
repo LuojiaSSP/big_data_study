@@ -77,8 +77,10 @@ def save_coulumnar_files(root_output_path):
     root_path = root_output_path
     output_path1 = os.path.join(root_path,"weibo_output", "parquet")
     # output_path2 = os.path.join(root_path,"weibo_output", "vaex_hdf5")
+    output_path3 = os.path.join(root_path,"weibo_output", "fastparquet")
     os.makedirs(output_path1,exist_ok = True)
     # os.makedirs(output_path2,exist_ok = True)
+    os.makedirs(output_path3,exist_ok = True)
 
 
 
@@ -106,6 +108,8 @@ def save_coulumnar_files(root_output_path):
             data["lat"] =data["lat"].astype(float)
 
             data.to_parquet("%s/%s.parquet"%(output_path1,collection_name),engine='pyarrow' )
+            # notice that fastparquet is much faster and smaller (of the file size)  than pyarrow
+            data.to_parquet("%s/%s.parquet"%(output_path3,collection_name),engine='fastparquet' )
             
             # vaex_df = vaex.from_pandas(data, copy_index=False)  
             # vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
@@ -142,8 +146,8 @@ def delete_unziped_files(download_path,file_name):
 
 if __name__ == "__main__":
     # 待处理的文件时间
-    start_date = datetime.date(2022,12,1)
-    end_date = datetime.date(2023,1,1)
+    start_date = datetime.date(2022,9,1)
+    end_date = datetime.date(2022,10,1)
     # 百度云的待处理文件存储位置
     could_base_path = "/data/China_weibo_data/mongo_data_backup/"
     # 文件的下载位置以及文件处理后数据的存储位置
@@ -154,16 +158,17 @@ if __name__ == "__main__":
     # download_path = "/Users/kang/baiduyun_sync/work/weibo_data_analysis/"
     i = 0
     while start_date <= end_date:
-        file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
+        # file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
+        file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".zip"
         print(file_name,"*"*60)
         start_date += relativedelta(months=+1)
 
         could_file_path = "%s%s"%(could_base_path,file_name)
-        # print(could_file_path)
+        print(could_file_path)
         # if i!=0:
-        download_data(could_file_path,download_path)
-        un_zip_data(file_name,download_path)
-        # file_name = "202105.7z"
+        # download_data(could_file_path,download_path)
+        # un_zip_data(file_name,download_path)
+        # # file_name = "202105.7z"
         upload_to_mongo(download_path,file_name)
         save_coulumnar_files(root_output_path=download_path)
         mongo_client = MongoClient("mongodb://localhost:27017")
@@ -171,6 +176,6 @@ if __name__ == "__main__":
         for db_name in dblist:
             delete_database(db_name=db_name)
         delete_unziped_files(download_path,file_name)
-        i+=1
+        # i+=1
         # break
         
