@@ -18,7 +18,7 @@ for item in tqdm(os.listdir(input_dir)):
     groups = df.groupby("date")
     
     for k in tqdm(groups.groups,total=groups.ngroups):
-        if not date(2021,4,1)<= k <=date(2022,4,30):
+        if  k < date(2022,4,30):
             continue
         file_name = "weibo_text_clean_China_"+k.isoformat()+".parquet"
     #     print(file_name)
