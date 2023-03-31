@@ -28,10 +28,18 @@ input_path = "../data/weibo_process/weibo_output/weibo_text_clean_parquet_daily"
 out_path = "../data/weibo_process/weibo_output/weibo_text_clean_parquet_daily_city_coded"
 os.makedirs(out_path, exist_ok=True)
 
+# find need process files
+need_process = [file_name for file_name in os.listdir(input_path) if 
+                file_name.endswith(".parquet") and file_name not in os.listdir(out_path)]
+
 files_df = pd.DataFrame(list(os.listdir(input_path)))
 files_df.columns = ["file_name"]
 files_df["file_path"] = files_df["file_name"].apply(lambda x: os.path.join(input_path, x))
 files_df["out_path"] = files_df["file_name"].apply(lambda x: os.path.join(out_path, x))
+files_df = files_df[files_df["file_name"].isin(need_process)]
+
+print("need process files: ", len(files_df))
+print(files_df)
 
 def geo_labeling(file_path, out_path):
 

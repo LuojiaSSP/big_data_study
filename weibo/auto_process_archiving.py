@@ -4,8 +4,9 @@ from tqdm import tqdm,trange
 import pandas as pd
 import datetime
 from dateutil.relativedelta import relativedelta
+# from prefect import flow,task
 
-
+# @task
 def download_data(could_file_path,download_path):
     cmd = """cd %s
     BaiduPCS-Go download %s -p 3 --save"""%(download_path,could_file_path)
@@ -13,6 +14,7 @@ def download_data(could_file_path,download_path):
     os.system(cmd)
     print("download data %s done!"%could_file_path)
 
+# @task
 def un_zip_data(file_name,unzip_outpath):
     """sudo apt update && sudo apt install --assume-yes p7zip-full #Ubuntu and Debian
     on mac:
@@ -26,6 +28,7 @@ def un_zip_data(file_name,unzip_outpath):
     os.system(cmd)
     print("unzip %s done"%file_name)
 
+# @task
 def upload_to_mongo(backup_path,file_name):
 
     cmd = """cd %s
@@ -33,6 +36,7 @@ def upload_to_mongo(backup_path,file_name):
     os.system(cmd)
     print("upload %s done"%backup_path)
 
+# @task
 def get_collection_as_dataframe(collection,collection_name):
     data_list = []
     for item in tqdm(collection.find(),total = collection.estimated_document_count(),desc = "%s"%collection_name):
@@ -70,6 +74,8 @@ def get_collection_as_dataframe(collection,collection_name):
     data_list = pd.DataFrame(data_list)
 
     return data_list
+
+# @task
 def save_coulumnar_files(root_output_path):
     
     mongo_client = MongoClient("mongodb://localhost:27017")
@@ -109,7 +115,7 @@ def save_coulumnar_files(root_output_path):
 
             data.to_parquet("%s/%s.parquet"%(output_path1,collection_name),engine='pyarrow' )
             # notice that fastparquet is much faster and smaller (of the file size)  than pyarrow
-            data.to_parquet("%s/%s.parquet"%(output_path3,collection_name),engine='fastparquet' )
+            # data.to_parquet("%s/%s.parquet"%(output_path3,collection_name),engine='fastparquet' )
             
             # vaex_df = vaex.from_pandas(data, copy_index=False)  
             # vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
@@ -128,6 +134,7 @@ def save_coulumnar_files(root_output_path):
 
     print("save to local coulumnar_files done")
 
+# @task
 def delete_database(db_name):
     mongo_client = MongoClient("mongodb://localhost:27017")
     mongo_client.drop_database(db_name)
@@ -136,6 +143,7 @@ def delete_database(db_name):
     # os.system(cmd)
     print("delete mongo database done")
 
+# @task
 def delete_unziped_files(download_path,file_name):
     cmd ="""cd %s
     rm %s
@@ -143,13 +151,14 @@ def delete_unziped_files(download_path,file_name):
     os.system(cmd)
     print("delete 7z and unziped files %s done"%file_name)
 
-
 if __name__ == "__main__":
+
+
     # 待处理的文件时间
-    start_date = datetime.date(2022,9,1)
-    end_date = datetime.date(2022,10,1)
+    start_date = datetime.date(2023,2,1)
+    end_date = datetime.date(2023,2,27)
     # 百度云的待处理文件存储位置
-    could_base_path = "/data/China_weibo_data/mongo_data_backup/"
+    could_base_path = "/apps/bypy/data/weibo_data/mongo_data_backup/"
     # 文件的下载位置以及文件处理后数据的存储位置
     download_path = "../data/weibo_process/"
     # mkdirs
@@ -159,7 +168,7 @@ if __name__ == "__main__":
     i = 0
     while start_date <= end_date:
         # file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
-        file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".zip"
+        file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
         print(file_name,"*"*60)
         start_date += relativedelta(months=+1)
 
@@ -169,7 +178,7 @@ if __name__ == "__main__":
         # download_data(could_file_path,download_path)
         # un_zip_data(file_name,download_path)
         # # file_name = "202105.7z"
-        upload_to_mongo(download_path,file_name)
+        # upload_to_mongo(download_path,file_name)
         save_coulumnar_files(root_output_path=download_path)
         mongo_client = MongoClient("mongodb://localhost:27017")
         dblist = [item for item in mongo_client.list_database_names() if "weibodata" in item]
@@ -178,4 +187,3 @@ if __name__ == "__main__":
         delete_unziped_files(download_path,file_name)
         # i+=1
         # break
-        

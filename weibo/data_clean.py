@@ -125,7 +125,7 @@ if __name__ == "__main__":
     log_path = "./log.txt"
     logger.add(log_path, rotation='1 week', retention='30 days', enqueue=True)
     
-    input_path = "/home/ubuntu/Downloads/148638908_fxk_123/origin_parquet"
+    input_path = "../data/weibo_process/weibo_output/parquet"
     output_path = "../data/weibo_process/weibo_output/weibo_text_clean_parquet"
     os.makedirs(output_path,exist_ok=True)
     
@@ -135,7 +135,9 @@ if __name__ == "__main__":
     ht = HarvestText()
     CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
          
-    need_process = ["China_2209_22-30.parquet","China_2210_15-21.parquet"]
+    # need_process = ["China_2209_22-30.parquet","China_2210_15-21.parquet"]
+    print("need process:",len(need_process))
+    print(need_process)
     for file_name in tqdm.tqdm(need_process,desc="data need precess"):
 
         try:
