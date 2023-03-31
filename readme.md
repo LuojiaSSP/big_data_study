@@ -5,8 +5,9 @@ weibo 目录下的脚本
 - `auto_process_archiving.py` 自动从百度云下载并归档微博数据，生成parquet文件 (Xiaokang) 在上传数据之前进行处理并备份！
 - `data_clean.py` 对微博数据中的文本进行清理以方便进行进一步的语言处理，为模型做准备 (Xiaokang and Dongyang)，这个主要有利于对文本进行训练等
 - `drop_duplicates.py` 对微博所有的数据根据`id`进行去重并生成按照天组织的parquet文件 (Xiaokang)可以减少每次读到内存的数据大小。
+- `geo_labeling.py` 对微博数据进行地理编码，生成地理编码的结果 (Xiaokang) 
 
-以上可以产生数据的三个版本
+以上可以产生数据的四个版本
 
 注意 ⚠️:
 
@@ -15,7 +16,7 @@ weibo 目录下的脚本
 
 ## Todo
 
-- [ ] 对所有的数据进行地理编码的代码
+- [x] 对所有的数据进行地理编码的代码
 - [ ] 数据库的备份请使用脚本自动运行从而保持名字的一致性、数据格式的一致性
 - [ ] Setup automaticlly tasks
 - [ ] 对所有数据进行情感计算的结果
