@@ -65,8 +65,7 @@ use_lang                                               object
 安装
 
 ```bash
-conda install mongodb
-conda install mongo-tools
+conda install mongodb mongo-tools pymongo p7zip
 ```
 
 服务开启
