@@ -2,11 +2,11 @@ import os
 from pymongo import MongoClient
 from tqdm import tqdm,trange
 import pandas as pd
-import vaex
 import datetime
 from dateutil.relativedelta import relativedelta
+# from prefect import flow,task
 
-
+# @task
 def download_data(could_file_path,download_path):
     cmd = """cd %s
     BaiduPCS-Go download %s -p 3 --save"""%(download_path,could_file_path)
@@ -14,6 +14,7 @@ def download_data(could_file_path,download_path):
     os.system(cmd)
     print("download data %s done!"%could_file_path)
 
+# @task
 def un_zip_data(file_name,unzip_outpath):
     """sudo apt update && sudo apt install --assume-yes p7zip-full #Ubuntu and Debian
     on mac:
@@ -27,6 +28,7 @@ def un_zip_data(file_name,unzip_outpath):
     os.system(cmd)
     print("unzip %s done"%file_name)
 
+# @task
 def upload_to_mongo(backup_path,file_name):
 
     cmd = """cd %s
@@ -34,6 +36,7 @@ def upload_to_mongo(backup_path,file_name):
     os.system(cmd)
     print("upload %s done"%backup_path)
 
+# @task
 def get_collection_as_dataframe(collection,collection_name):
     data_list = []
     for item in tqdm(collection.find(),total = collection.estimated_document_count(),desc = "%s"%collection_name):
@@ -71,15 +74,19 @@ def get_collection_as_dataframe(collection,collection_name):
     data_list = pd.DataFrame(data_list)
 
     return data_list
+
+# @task
 def save_coulumnar_files(root_output_path):
     
     mongo_client = MongoClient("mongodb://localhost:27017")
 
     root_path = root_output_path
     output_path1 = os.path.join(root_path,"weibo_output", "parquet")
-    output_path2 = os.path.join(root_path,"weibo_output", "vaex_hdf5")
+    # output_path2 = os.path.join(root_path,"weibo_output", "vaex_hdf5")
+    output_path3 = os.path.join(root_path,"weibo_output", "fastparquet")
     os.makedirs(output_path1,exist_ok = True)
-    os.makedirs(output_path2,exist_ok = True)
+    # os.makedirs(output_path2,exist_ok = True)
+    os.makedirs(output_path3,exist_ok = True)
 
 
 
@@ -92,7 +99,7 @@ def save_coulumnar_files(root_output_path):
         db = mongo_client[db_name]
         #数据库中的集合名字
         collist = [item for item in db.list_collection_names() if (item != "China_tmp") ]
-
+        
         # break
         for collection_name in collist:
 
@@ -107,9 +114,11 @@ def save_coulumnar_files(root_output_path):
             data["lat"] =data["lat"].astype(float)
 
             data.to_parquet("%s/%s.parquet"%(output_path1,collection_name),engine='pyarrow' )
+            # notice that fastparquet is much faster and smaller (of the file size)  than pyarrow
+            # data.to_parquet("%s/%s.parquet"%(output_path3,collection_name),engine='fastparquet' )
             
-            vaex_df = vaex.from_pandas(data, copy_index=False)  
-            vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
+            # vaex_df = vaex.from_pandas(data, copy_index=False)  
+            # vaex_df.export_hdf5("%s/%s_column.hdf5"%(output_path2,collection_name))    
 
             # df = pd.read_parquet(file_path,engine="pyarrow")
             #存储为csv格式
@@ -125,13 +134,16 @@ def save_coulumnar_files(root_output_path):
 
     print("save to local coulumnar_files done")
 
+# @task
 def delete_database(db_name):
-    cmd = """mongo 127.0.0.1:27017/%s --eval "db.dropDatabase();" """%db_name
-    # mongo_client = MongoClient("mongodb://localhost:27017")
-    # mongo_client.drop_database(db_name)
-    os.system(cmd)
+    mongo_client = MongoClient("mongodb://localhost:27017")
+    mongo_client.drop_database(db_name)
+
+    # cmd = """mongo 127.0.0.1:27017/%s --eval "db.dropDatabase();" """%db_name
+    # os.system(cmd)
     print("delete mongo database done")
 
+# @task
 def delete_unziped_files(download_path,file_name):
     cmd ="""cd %s
     rm %s
@@ -139,33 +151,39 @@ def delete_unziped_files(download_path,file_name):
     os.system(cmd)
     print("delete 7z and unziped files %s done"%file_name)
 
-
 if __name__ == "__main__":
+
+
     # 待处理的文件时间
-    start_date = datetime.date(2021,12,1)
-    end_date = datetime.date(2022,4,1)
+    start_date = datetime.date(2023,2,1)
+    end_date = datetime.date(2023,2,27)
     # 百度云的待处理文件存储位置
-    could_base_path = "/data/China_weibo_data/mongo_data_backup/"
+    could_base_path = "/apps/bypy/data/weibo_data/mongo_data_backup/"
     # 文件的下载位置以及文件处理后数据的存储位置
-    download_path = "/Users/kang/Downloads/weibo_process/"
+    download_path = "../data/weibo_process/"
+    # mkdirs
+    os.makedirs(download_path,exist_ok=True)
 
     # download_path = "/Users/kang/baiduyun_sync/work/weibo_data_analysis/"
+    i = 0
     while start_date <= end_date:
+        # file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
         file_name = ''.join(start_date.isoformat().split("-"))[:-2]+".7z"
         print(file_name,"*"*60)
         start_date += relativedelta(months=+1)
 
         could_file_path = "%s%s"%(could_base_path,file_name)
-        # print(could_file_path)
-        download_data(could_file_path,download_path)
-        un_zip_data(file_name,download_path)
-        # file_name = "202105.7z"
-        upload_to_mongo(download_path,file_name)
+        print(could_file_path)
+        # if i!=0:
+        # download_data(could_file_path,download_path)
+        # un_zip_data(file_name,download_path)
+        # # file_name = "202105.7z"
+        # upload_to_mongo(download_path,file_name)
         save_coulumnar_files(root_output_path=download_path)
         mongo_client = MongoClient("mongodb://localhost:27017")
         dblist = [item for item in mongo_client.list_database_names() if "weibodata" in item]
         for db_name in dblist:
             delete_database(db_name=db_name)
         delete_unziped_files(download_path,file_name)
+        # i+=1
         # break
-        

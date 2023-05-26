@@ -125,8 +125,9 @@ if __name__ == "__main__":
     log_path = "./log.txt"
     logger.add(log_path, rotation='1 week', retention='30 days', enqueue=True)
     
-    input_path = "weibo_output/parquet"
-    output_path = "weibo_output/weibo_text_clean_parquet"
+    input_path = "../data/weibo_process/weibo_output/parquet"
+    output_path = "../data/weibo_process/weibo_output/weibo_text_clean_parquet"
+    os.makedirs(output_path,exist_ok=True)
     
     need_process = [item for item in os.listdir(input_path) if item not in list(os.listdir(output_path))]
     print(len(os.listdir(output_path)),len(os.listdir(input_path)))
@@ -134,35 +135,24 @@ if __name__ == "__main__":
     ht = HarvestText()
     CharTable = pyhanlp.JClass('com.hankcs.hanlp.dictionary.other.CharTable')
          
-         
-    for file_name in tqdm.tqdm(os.listdir(input_path),desc="data need precess"):
+    # need_process = ["China_2209_22-30.parquet","China_2210_15-21.parquet"]
+    print("need process:",len(need_process))
+    print(need_process)
+    for file_name in tqdm.tqdm(need_process,desc="data need precess"):
 
-        #file_name = "China_2105_01-07.parquet"
-        data  = pd.read_parquet('%s/%s'%(input_path,file_name))
-        sample = data.sample(100)
-        # sample=data
-          # text = sample['text'].values[1]
-    # text_clean = clean_a_test(text)
-    # print(text,"\n",text_clean)
-        # tqdm.tqdm.pandas(desc=file_name)
-        #sample['text_clean'] = sample.text.apply_parallel(clean_a_test_p, num_processes=6)
-# 369 ms ± 70.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+        try:
+            data  = pd.read_parquet('%s/%s'%(input_path,file_name))
+        except Exception as e:
+            print(file_name, e)
+            continue
         t1 = datetime.now()
-        x = sample["text"].map(CharTable.convert).map(lambda x:ht.clean_text(x,emoji=False))
-        # TODO: 这里可以实现多线程进一步加快处理速度
+        x = data["text"].map(CharTable.convert).map(lambda x:ht.clean_text(x,emoji=False))
         x = x.map(remove_url)
-        # x = x.apply_parallel(remove_url,num_processes=6)
-        # x = remove_url_s(x) 
         x = clean_s(x).map(
             remove_invisible_chars).map(deletehttp)
-        # x = deletehttp_s(x)
-        sample["text_clean"] = x
-        # sample['text_clean'] = sample.progress_apply(clean_a_test,axis=1)
+        data["text_clean"] = x
         print("use ",datetime.now()-t1)
-        break
-    # sample['text_clean'] = sample.apply(clean_a_test,axis=1)
-    # 462 ms ± 36.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-        # sample.to_parquet("%s/%s"%(output_path,file_name))
+        data.to_parquet("%s/%s"%(output_path,file_name))
     
 
 
